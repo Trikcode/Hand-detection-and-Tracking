@@ -18,21 +18,25 @@ class handDetector():
 
     def findHands(self, img, draw=True):
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        results = self.hands.process(imgRGB)
+        self.results = self.hands.process(imgRGB)
         # print(results.multi_hand_landmarks)
-        if results.multi_hand_landmarks:
-            for handLms in results.multi_hand_landmarks:
+        if self.results.multi_hand_landmarks:
+            for handLms in self.results.multi_hand_landmarks:
                 if draw:
                     self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS)
 
-
-                # for Id, lm in enumerate(handLms.landmark):
-                #     # print(Id, lm)
-                #     h, w, c = img.shape
-                #     cx, cy = int(lm.x * w), int(lm.y * h)
-                #     print(Id, cx, cy)
-                #     if Id == 0:
-                #         cv2.circle(img, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
+    def findPosition(self, img, handNo=8, draw=True):
+        lmList = []
+        if self.results.multi_hand_landmarks:
+            myHand = self.results.multi_hand_landmarks[handNo]
+            for Id, lm in enumerate(myHand.landmark):
+                # print(Id, lm)
+                h, w, c = img.shape
+                cx, cy = int(lm.x * w), int(lm.y * h)
+                lmList.append(Id, cx, cy)
+                if draw == 0:
+                     cv2.circle(img, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
+        return lmList
 
 
 def main():
@@ -43,6 +47,9 @@ def main():
     while True:
         success, img = cap.read()
         img = detector.findHands(img)
+        lmList = detector.findPosition(img)
+        if len(lmList) !=0:
+            print(lmList)
         cTime = time.time()
         fps = 1/(cTime-pTime)
         pTime = cTime
